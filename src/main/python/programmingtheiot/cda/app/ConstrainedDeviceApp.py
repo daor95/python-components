@@ -72,8 +72,8 @@ def main():
 	cda = ConstrainedDeviceApp()
 	cda.startApp()
 	
-	# run for 10 seconds - this can be changed as needed
-	sleep(10)
+	# run for 65 seconds - this can be changed as needed
+	sleep(65)
 	
 	# optionally stop the app - this can be removed if needed
 	cda.stopApp(0)
