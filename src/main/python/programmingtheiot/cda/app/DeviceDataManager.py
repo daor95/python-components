@@ -70,6 +70,7 @@ class DeviceDataManager(IDataMessageListener):
 
 		if self.enableActuation:
 			self.actuatorAdapterMgr = ActuatorAdapterManager(dataMsgListener=self)
+			self.actuatorAdapterMgr.setDataMessageListener(self)
 			logging.info("Local actuation capabilities enabled")
 
 		self.handleTempChangeOnDevice = \

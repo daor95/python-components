@@ -12,7 +12,10 @@
 
 import logging
 
-from programmingtheiot.cda.system.SystemPerformanceManager import SystemPerformanceManager
+#from programmingtheiot.cda.system.SystemPerformanceManager import SystemPerformanceManager
+from programmingtheiot.common.ConfigUtil import ConfigUtil
+import programmingtheiot.common.ConfigConst as ConfigConst
+from programmingtheiot.cda.app.DeviceDataManager import DeviceDataManager
 
 from time import sleep
 
@@ -34,7 +37,7 @@ class ConstrainedDeviceApp():
 		
 		# TODO: implementation here
 
-		self.sysPerfMgr = SystemPerformanceManager()
+		self.devDataMgr = DeviceDataManager()
 
 	def startApp(self):
 		"""
@@ -45,7 +48,7 @@ class ConstrainedDeviceApp():
 		
 		# TODO: implementation here
 
-		self.sysPerfMgr.startManager()
+		self.devDataMgr.startManager()
 		
 		logging.info("CDA started.")
 
@@ -58,7 +61,7 @@ class ConstrainedDeviceApp():
 
 		# TODO: implementation here
 
-		self.sysPerfMgr.stopManager()
+		self.devDataMgr.stopManager()
 		
 		logging.info("CDA stopped with exit code %s.", str(code))
 		
@@ -79,12 +82,23 @@ def main():
 	"""
 	cda = ConstrainedDeviceApp()
 	cda.startApp()
+
+	runForever = ConfigUtil().getBoolean(ConfigConst.CONSTRAINED_DEVICE, ConfigConst.RUN_FOREVER_KEY)
+
+	if runForever:
+		while (True):
+			sleep(5)
+
+	else:
+		# TODO: Make the '65' value configurable
+		sleep(65)
+		cda.stopApp(0)
 	
 	# run for 65 seconds - this can be changed as needed
-	sleep(65)
+	#sleep(65)
 	
 	# optionally stop the app - this can be removed if needed
-	cda.stopApp(0)
+	#cda.stopApp(0)
 
 if __name__ == '__main__':
 	"""
