@@ -40,3 +40,12 @@ class SensorData(BaseIotData):
 	def _handleUpdateData(self, data):
 		if data and isinstance(data, SensorData):
 			self.value = data.getValue()
+
+	def __str__(self):
+		baseStr = super().__str__()
+		sensorStr = '{}, Value: {:.2f}'.format(
+			baseStr,
+			self.value
+		)
+		return sensorStr
+

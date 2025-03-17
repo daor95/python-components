@@ -48,3 +48,12 @@ class SystemPerformanceData(BaseIotData):
 		if data and isinstance(data, SystemPerformanceData):
 			self.cpuUtil = data.getCpuUtilization()
 			self.memUtil = data.getMemoryUtilization()
+
+	def __str__(self):
+		baseStr = super().__str__()
+		systemPerformanceDataStr = '{}, CPU utilization = {}, Memory utilization = {}'.format(
+			baseStr,
+			self.cpuUtil,
+			self.memUtil
+		)
+		return systemPerformanceDataStr

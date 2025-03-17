@@ -60,4 +60,15 @@ class ActuatorData(BaseIotData):
 			self.stateData = data.getStateData()
 			self.value = data.getValue()
 			self.isResponse = data.isResponseFlagEnabled()
-		
+
+
+	def __str__(self):
+		baseStr = super().__str__()
+		actuatorStr = '{}, Command: {}, StateData: {}, Value: {}, Response: {}'.format(
+			baseStr,
+			self.command,
+			self.stateData,
+			self.value,
+			self.isResponse
+		)
+		return actuatorStr
