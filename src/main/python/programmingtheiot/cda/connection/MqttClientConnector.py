@@ -58,6 +58,9 @@ class MqttClientConnector(IPubSubClient):
 
 		self.mqttClient = None
 
+		if clientID:
+			self.clientID = clientID
+
 		# IMPORTANT:
 		#
 		# You can choose to set clientID in a number of ways:
