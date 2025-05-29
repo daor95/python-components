@@ -324,3 +324,13 @@ class DeviceDataManager(IDataMessageListener):
 		2) Act on msg: If # 1 is true, send message upstream using one (or both) client connections.
 		"""
 		pass
+
+	def handleActuatorCommandMessage(self, data: ActuatorData) -> ActuatorData:
+		if data:
+			logging.info("Processing actuator command message.")
+
+			# TODO: add further validation before sending the command
+			return self.actuatorAdapterMgr.sendActuatorCommand(data)
+		else:
+			logging.warning("Received invalid ActuatorData command message. Ignoring.")
+			return None
