@@ -50,7 +50,16 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 	@classmethod
 	def tearDownClass(self):
-		pass
+		# Stop any active observers
+		self.coapClient.stopObserver(resource=ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE)
+		# Clean up asyncio event loop
+		import asyncio
+		loop = asyncio.get_event_loop()
+		pending = asyncio.all_tasks(loop)
+		for task in pending:
+			task.cancel()
+		loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+		loop.close()
 	
 	def setUp(self):
 		pass
@@ -141,13 +150,13 @@ class CoapClientConnectorTest(unittest.TestCase):
 		self.coapClient.sendPutRequest(
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = False, payload = jsonData, timeout = 5)
 
-	@unittest.skip("Ignore for now.")
+	#@unittest.skip("Ignore for now.")
 	def testActuatorCommandObserve(self):
 		"""
 		Comment the annotation to test Observe
 		"""
 		self._startObserver()
-		sleep(30)
+		sleep(3)
 		self._stopObserver()
 		
 	def _startObserver(self):

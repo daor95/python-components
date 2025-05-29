@@ -89,7 +89,7 @@ class CoapClientConnector(IRequestResponseClient):
 			name: str = None,
 			enableCON: bool = False,
 			timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
-	) -> bool:
+			) -> bool:
 		if resource or name:
 			resourcePath = self._createResourcePath(resource, name)
 
@@ -101,8 +101,10 @@ class CoapClientConnector(IRequestResponseClient):
 					enableCON=enableCON
 				)
 			)
+			return True
 		else:
 			logging.warning("Can't issue Async DELETE - no path or path list provided.")
+			return False
 
 
 	def sendGetRequest(
@@ -120,8 +122,10 @@ class CoapClientConnector(IRequestResponseClient):
 			asyncio.get_event_loop().run_until_complete(
 				self._handleGetRequest(resourcePath=resourcePath, enableCON=enableCON)
 			)
+			return True
 		else:
 			logging.warning("Can't issue Async GET - no path or path list provided.")
+			return False
 
 	def sendPostRequest(
 			self,
@@ -130,7 +134,7 @@ class CoapClientConnector(IRequestResponseClient):
 			enableCON: bool = False,
 			payload: str = None,
 			timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
-	) -> bool:
+		) -> bool:
 		if resource or name:
 			resourcePath = self._createResourcePath(resource, name)
 
@@ -143,8 +147,10 @@ class CoapClientConnector(IRequestResponseClient):
 					enableCON=enableCON
 				)
 			)
+			return True
 		else:
 			logging.warning("Can't issue Async POST - no path or path list provided.")
+			return False
 
 	def sendPutRequest(
 			self,
@@ -166,8 +172,10 @@ class CoapClientConnector(IRequestResponseClient):
 					enableCON=enableCON
 				)
 			)
+			return True
 		else:
 			logging.warning("Can't issue Async PUT - no path or path list provided.")
+			return False
 
 	def setDataMessageListener(self, listener: IDataMessageListener = None) -> bool:
 		if listener is not None:
@@ -175,22 +183,93 @@ class CoapClientConnector(IRequestResponseClient):
 			return True
 		return False
 
-	def startObserver(self, resource: ResourceNameEnum = None, name: str = None, ttl: int = IRequestResponseClient.DEFAULT_TTL) -> bool:
-		logging.info("startObserver called.")
-		try:
-			asyncio.get_event_loop().run_until_complete(self._handleStartObserveRequest(resource))
+	def startObserver(
+			self,
+			resource: ResourceNameEnum = None,
+			name: str = None,
+			ttl: int = IRequestResponseClient.DEFAULT_TTL
+			) -> bool:
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
+
+			if resourcePath in self.observeRequests:
+				logging.warning("Already observing resource %s. Ignoring start observe request.", resourcePath)
+				return False
+
+			asyncio.get_event_loop().run_until_complete(
+				asyncio.ensure_future(self._handleStartObserveRequest(resourcePath))
+			)
 			return True
-		except Exception as e:
-			logging.error(f"Failed to start observer: {e}")
+		else:
+			logging.warning("Can't issue Async OBSERVE - GET - no path or path list provided.")
 			return False
 
-	async def _handleStartObserveRequest(self, resource):
-		pass
+	def stopObserver(
+			self,
+			resource: ResourceNameEnum = None,
+			name: str = None,
+			timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
+			) -> bool:
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
 
-	def stopObserver(self, resource: ResourceNameEnum = None, name: str = None, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("stopObserver called.")
-		return False
+			if resourcePath not in self.observeRequests:
+				logging.warning("Resource %s not being observed. Ignoring stop observe request.", resourcePath)
+				return False
 
+			asyncio.get_event_loop().run_until_complete(
+				self._handleStopObserveRequest(resourcePath)
+			)
+			return True
+		else:
+			logging.warning("Can't cancel OBSERVE - GET - no path provided.")
+			return False
+
+	async def _handleStartObserveRequest(self, resourcePath: str = None):
+		logging.info('Handle start observe invoked. Waiting for each input: ' + resourcePath)
+
+		full_uri = f"coap://{self.host}:{self.port}/{resourcePath.lstrip('/')}"
+		msg = Message(code=Code.GET, uri=full_uri, observe=0)
+		req = self.coapClient.request(msg)
+
+		self.observeRequests[resourcePath] = req
+
+		try:
+			responseData = await req.response
+
+			# TODO: validate response first
+			self._onGetResponse(responseData)
+
+			async for responseData in req.observation:
+				# TODO: validate response first
+				self._onGetResponse(responseData)
+
+				req.observation.cancel()
+				break
+
+		except Exception as e:
+			# TODO: log warning and possibly stack trace, then be sure to stop observing...
+			logging.warning("Failed to execute OBSERVE - GET. Recovering...")
+			traceback.print_exception(type(e), e, e.__traceback__)
+
+	async def _handleStopObserveRequest(self, resourcePath: str = None, ignoreErr: bool = False):
+		if resourcePath in self.observeRequests:
+			logging.info('Handle stop observe invoked: ' + resourcePath)
+
+			try:
+				observeRequest = self.observeRequests[resourcePath]
+				observeRequest.observation.cancel()
+			except Exception as e:
+				if not ignoreErr:
+					logging.warning("Failed to cancel OBSERVE - GET: " + resourcePath)
+
+			try:
+				del self.observeRequests[resourcePath]
+			except Exception as e:
+				if not ignoreErr:
+					logging.warning("Failed to remove observable from list: " + resourcePath)
+		else:
+			logging.warning('Resource not currently under observation. Ignoring: ' + resourcePath)
 
 	def _initClient(self):
 		asyncio.get_event_loop().run_until_complete(self._initClientContext())
