@@ -105,9 +105,28 @@ class CoapClientConnector(IRequestResponseClient):
 		else:
 			logging.warning("Can't issue Async GET - no path or path list provided.")
 
-	def sendPostRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, payload: str = None, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("sendPostRequest called.")
-		return False
+	def sendPostRequest(
+			self,
+			resource: ResourceNameEnum = None,
+			name: str = None,
+			enableCON: bool = False,
+			payload: str = None,
+			timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
+	) -> bool:
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
+
+			logging.info("Issuing Async POST to path: " + resourcePath)
+
+			asyncio.get_event_loop().run_until_complete(
+				self._handlePostRequest(
+					resourcePath=resourcePath,
+					payload=payload,
+					enableCON=enableCON
+				)
+			)
+		else:
+			logging.warning("Can't issue Async POST - no path or path list provided.")
 
 	def sendPutRequest(
 			self,
@@ -266,5 +285,39 @@ class CoapClientConnector(IRequestResponseClient):
 			return
 
 		logging.info('PUT response received: %s', response.payload)
+
+	async def _handlePostRequest(self, resourcePath: str = None, payload: str = None, enableCON: bool = False):
+		try:
+			msgType = NON
+
+			if enableCON:
+				msgType = CON
+
+			payloadBytes = b''
+
+			# Decide which encoding to use - can also load from config
+			if payload:
+				payloadBytes = payload.encode('utf-8')
+
+			full_uri = f"coap://{self.host}:{self.port}/{resourcePath.lstrip('/')}"
+			msg = Message(mtype=msgType, payload=payloadBytes, code=Code.POST, uri=full_uri)
+			req = self.coapClient.request(msg)
+			responseData = await req.response
+
+			self._onPostResponse(responseData)
+
+		except Exception as e:
+			# TODO: for debugging, you may want to optionally include the stack trace, as shown
+			logging.warning("Failed to process POST request for path: " + resourcePath)
+			traceback.print_exception(type(e), e, e.__traceback__)
+
+
+	def _onPostResponse(self, response):
+		if not response:
+			logging.warning('POST response invalid. Ignoring.')
+			return
+
+		logging.info('POST response received: %s', response.payload)
+
 
 
