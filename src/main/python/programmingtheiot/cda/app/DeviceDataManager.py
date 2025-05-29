@@ -96,6 +96,14 @@ class DeviceDataManager(IDataMessageListener):
 			self.mqttClient.setDataMessageListener(self)
 
 
+		self.enableCoapClient = self.configUtil.getBoolean(
+			section=ConfigConst.CONSTRAINED_DEVICE,
+			key=ConfigConst.ENABLE_COAP_CLIENT_KEY
+		)
+
+		if self.enableCoapClient:
+			self.coapClient = CoapClientConnector(dataMsgListener=self)
+
 	def getLatestActuatorDataResponseFromCache(self, name: str = None) -> ActuatorData:
 		"""
 		Retrieves the named actuator data (response) item from the internal data cache.
