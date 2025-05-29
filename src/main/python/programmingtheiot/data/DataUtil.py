@@ -29,12 +29,16 @@ class DataUtil():
 
 		logging.info("Created DataUtil instance.")
 
-	def actuatorDataToJson(self, data: ActuatorData = None, useDecForFloat:bool = False):
+	def actuatorDataToJson(self, data: ActuatorData = None, useDecForFloat: bool = False):
+
 		if not data:
 			logging.debug("ActuatorData is null. Returning empty string.")
 			return ""
 
-		jsonData = self._generateJsonData(obj=data, useDecForFloat=False)
+		logging.debug("Encoding ActuatorData to JSON [pre] -->" + str(data))
+		jsonData = self._generateJsonData(obj = data, useDecForFloat = useDecForFloat)
+		logging.debug("Encoding ActuatorData to JSON [post] -->" + str(data))
+
 		return jsonData
 
 	def jsonToActuatorData(self, jsonData: str = None, useDecForFloat:bool = False):
@@ -52,7 +56,10 @@ class DataUtil():
 			logging.debug("SensorData is null. Returning empty string.")
 			return ""
 
+		logging.debug("Encoding SensorData to JSON [pre] -->" + str(data))
 		jsonData = self._generateJsonData(obj=data, useDecForFloat=useDecForFloat)
+
+		logging.debug("Encoding SensorData to JSON [post] -->" + str(data))
 		return jsonData
 
 	def jsonToSensorData(self, jsonData: str = None, useDecForFloat:bool = False):
@@ -70,7 +77,9 @@ class DataUtil():
 			logging.debug("SystemPerformanceData is null. Returning empty string.")
 			return ""
 
+		logging.debug("Encoding SystemPerformanceData to JSON [pre] -->" + str(data))
 		jsonData = self._generateJsonData(obj=data, useDecForFloat=useDecForFloat)
+		logging.debug("Encoding SystemPerformanceData to JSON [post] -->" + str(data))
 		return jsonData
 
 	def jsonToSystemPerformanceData(self, jsonData: str = None, useDecForFloat:bool = False):
