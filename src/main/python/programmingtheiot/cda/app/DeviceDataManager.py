@@ -249,8 +249,7 @@ class DeviceDataManager(IDataMessageListener):
 
 		if self.mqttClient:
 			self.mqttClient.connectClient()
-			self.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, callback=None,
-											 qos=ConfigConst.DEFAULT_QOS)
+			#self.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, callback=None, qos=ConfigConst.DEFAULT_QOS)
 
 		logging.info("Started DeviceDataManager.")
 
