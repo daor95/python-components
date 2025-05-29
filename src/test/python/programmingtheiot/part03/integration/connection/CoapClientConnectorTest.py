@@ -58,7 +58,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 	def tearDown(self):
 		pass
 
-	@unittest.skip("Ignore for now.")
+	#@unittest.skip("Ignore for now.")
 	def testConnectAndDiscover(self):
 		"""
 		Comment the annotation to test Connect and Discover
@@ -67,21 +67,19 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 		sleep(5)
 
+	"""
 	@unittest.skip("Ignore for now.")
 	def testGetActuatorCommandCon(self):
-		"""
-		Comment the annotation to test CON GET
-		"""
-		self.coapClient.sendGetRequest( \
+		
+		self.coapClient.sendGetRequest(
 			resource = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, enableCON = True, timeout = 5)
 		
 	@unittest.skip("Ignore for now.")
 	def testGetActuatorCommandNon(self):
-		"""
-		Comment the annotation to test CON GET
-		"""
-		self.coapClient.sendGetRequest( \
+		
+		self.coapClient.sendGetRequest(
 			resource = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, enableCON = False, timeout = 5)
+	"""
 		
 	@unittest.skip("Ignore for now.")
 	def testDeleteSensorMessageCon(self):
@@ -157,6 +155,23 @@ class CoapClientConnectorTest(unittest.TestCase):
 
 	def _stopObserver(self):
 		self.coapClient.stopObserver(resource = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE)
+
+	#@unittest.skip("Ignore for now.")
+	def testGetActuatorCommandCon(self):
+		self.coapClient.sendGetRequest(
+			resource=ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE,
+			enableCON=True,
+			timeout=5
+		)
+
+	#@unittest.skip("Ignore for now.")
+	def testGetActuatorCommandNon(self):
+		self.coapClient.sendGetRequest(
+			resource=ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE,
+			enableCON=False,
+			timeout=5
+		)
+
 
 if __name__ == "__main__":
 	unittest.main()

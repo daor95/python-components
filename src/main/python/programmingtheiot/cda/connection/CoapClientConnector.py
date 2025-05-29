@@ -72,18 +72,38 @@ class CoapClientConnector(IRequestResponseClient):
 
 		except socket.gaierror:
 			logging.info("Failed to resolve host: " + self.host)
-	
+
 	def sendDiscoveryRequest(self, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("sendDiscoveryRequest called.")
-		return False
+		logging.info("Discovering remote resources...")
+
+		return self.sendGetRequest(
+			resource=None,
+			name='.well-known/core',
+			enableCON=False,
+			timeout=timeout
+		)
 
 	def sendDeleteRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
 		logging.info("sendDeleteRequest called.")
 		return False
 
-	def sendGetRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("sendGetRequest called.")
-		return False
+	def sendGetRequest(
+			self,
+			resource: ResourceNameEnum = None,
+			name: str = None,
+			enableCON: bool = False,
+			timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
+			) -> bool:
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
+
+			logging.info("Issuing Async GET to path: " + resourcePath)
+
+			asyncio.get_event_loop().run_until_complete(
+				self._handleGetRequest(resourcePath=resourcePath, enableCON=enableCON)
+			)
+		else:
+			logging.warning("Can't issue Async GET - no path or path list provided.")
 
 	def sendPostRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, payload: str = None, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
 		logging.info("sendPostRequest called.")
@@ -147,3 +167,52 @@ class CoapClientConnector(IRequestResponseClient):
 			resourcePath = resourcePath + name
 
 		return resourcePath
+
+	async def _handleGetRequest(self, resourcePath: str = None, enableCON: bool = False):
+		try:
+			msgType = NON
+
+			if enableCON:
+				msgType = CON
+
+			full_uri = f"coap://{self.host}:{self.port}/{resourcePath.lstrip('/')}"
+			msg = Message(mtype=msgType, code=Code.GET, uri=full_uri)
+			req = self.coapClient.request(msg)
+			responseData = await req.response
+
+			self._onGetResponse(responseData)
+
+		except Exception as e:
+			# TODO: for debugging, you may want to optionally include the stack trace, as shown
+			logging.warning("Failed to process GET request for path: " + resourcePath)
+			traceback.print_exception(type(e), e, e.__traceback__)
+
+	def _onGetResponse(self, response):
+		if not response:
+			logging.warning('Async GET response invalid. Ignoring.')
+			return
+
+		logging.info('Async GET response received.')
+
+		jsonData = response.payload.decode("utf-8")
+
+		if len(response.requested_path) > 2:
+			dataType = response.requested_path[2]
+
+			if dataType == ConfigConst.ACTUATOR_CMD:
+				# TODO: convert payload to ActuatorData and verify!
+				logging.info("ActuatorData received: %s", jsonData)
+
+				try:
+					ad = DataUtil().jsonToActuatorData(jsonData)
+
+					if self.dataMsgListener:
+						self.dataMsgListener.handleActuatorCommandMessage(ad)
+				except:
+					logging.warning("Failed to decode actuator data. Ignoring: %s", jsonData)
+					return
+			else:
+				logging.info("Response data received. Payload: %s", jsonData)
+		else:
+			logging.info("Response data received. Payload: %s", jsonData)
+
