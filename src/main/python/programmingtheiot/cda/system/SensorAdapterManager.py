@@ -182,7 +182,7 @@ class SensorAdapterManager(object):
 			self.tempAdapter = TemperatureSensorSimTask(dataSet=tempData)
 
 			"""Smoke detector sensor simulation task."""
-			self.particleAdapter = SmokeDetectorSensorSimTask(dataSet=smokeParticleData)
+			self.smokeAdapter = SmokeDetectorSensorSimTask(dataSet=smokeParticleData)
 
 
 
@@ -205,4 +205,4 @@ class SensorAdapterManager(object):
 			smModule = import_module('programmingtheiot.cda.emulated.SmokeDetectorSensorEmulatorTask',
 									 'SmokeDetectorSensorEmulatorTask')
 			smClazz = getattr(smModule, 'SmokeDetectorSensorEmulatorTask')
-			self.particleAdapter = smClazz()
+			self.smokeAdapter = smClazz()
