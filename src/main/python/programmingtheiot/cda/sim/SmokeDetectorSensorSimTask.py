@@ -26,5 +26,5 @@ class SmokeDetectorSensorSimTask(BaseSensorSimTask):
         super(SmokeDetectorSensorSimTask, self).__init__(name = ConfigConst.SMOKE_PARTICLE_SENSOR_NAME,
 														 typeID = ConfigConst.SMOKE_PARTICLE_SENSOR_TYPE,
 														 dataSet = dataSet,
-														 minVal = SensorDataGenerator.LOW_NORMAL_ENV_PARTICLE,
-														 maxVal = SensorDataGenerator.HI_NORMAL_ENV_PARTICLE)
+														 minVal = SensorDataGenerator.LOW_NORMAL_SIZE_SMOKE_PARTICLE,
+														 maxVal = SensorDataGenerator.HI_NORMAL_SIZE_SMOKE_PARTICLE)
