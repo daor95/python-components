@@ -12,8 +12,10 @@ import logging
 from importlib import import_module
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from pisense import SenseHAT
 
 import programmingtheiot.common.ConfigConst as ConfigConst
+from programmingtheiot.cda.sim.SmokeDetectorSensorSimTask import SmokeDetectorSensorSimTask
 
 from programmingtheiot.common.ConfigUtil import ConfigUtil
 from programmingtheiot.common.IDataMessageListener import IDataMessageListener
@@ -63,6 +65,9 @@ class SensorAdapterManager(object):
 		self.pressureAdapter = None
 		self.tempAdapter = None
 
+		"""Sensor adapter for smoke detection."""
+		self.smokeAdapter = None
+
 		# see PIOT-CDA-03-006 description for thoughts on the next line of code
 		self._initEnvironmentalSensorTasks()
 
@@ -71,9 +76,15 @@ class SensorAdapterManager(object):
 		pressureData = self.pressureAdapter.generateTelemetry()
 		tempData = self.tempAdapter.generateTelemetry()
 
+		"""Telemetry data for smoke detection."""
+		smokeData = self.smokeAdapter.generateTelemetry()
+
 		humidityData.setLocationID(self.locationID)
 		pressureData.setLocationID(self.locationID)
 		tempData.setLocationID(self.locationID)
+
+		"""Location ID for smoke detection."""
+		smokeData.setLocationID(self.locationID)
 
 		logging.debug('Generated humidity data: ' + str(humidityData))
 		logging.debug('Generated pressure data: ' + str(pressureData))
@@ -83,6 +94,9 @@ class SensorAdapterManager(object):
 			self.dataMsgListener.handleSensorMessage(humidityData)
 			self.dataMsgListener.handleSensorMessage(pressureData)
 			self.dataMsgListener.handleSensorMessage(tempData)
+
+			"""Handle smoke data message."""
+			self.dataMsgListener.handleSensorMessage(smokeData)
 
 	def setDataMessageListener(self, listener: IDataMessageListener):
 		if listener:
@@ -136,6 +150,15 @@ class SensorAdapterManager(object):
 				section=ConfigConst.CONSTRAINED_DEVICE, key=ConfigConst.TEMP_SIM_CEILING_KEY,
 				defaultVal=SensorDataGenerator.HI_NORMAL_INDOOR_TEMP)
 
+		"""Declaration of smoke sensor particles."""
+		smokeParticlesFloor = self.configUtil.getFloat(section=ConfigConst.CONSTRAINED_DEVICE,
+												  key=ConfigConst.FIRE_EXTINGUISHER_SIM_FLOOR_KEY,
+												  defaultVal=SensorDataGenerator.LOW_NORMAL_SIZE_SMOKE_PARTICLE)
+
+		smokeParticlesCeiling = self.configUtil.getFloat(section=ConfigConst.CONSTRAINED_DEVICE,
+													key=ConfigConst.FIRE_EXTINGUISHER_SIM_CEILING_KEY,
+													defaultVal=SensorDataGenerator.HI_NORMAL_SIZE_SMOKE_PARTICLE)
+
 		if not self.useEmulator:
 			self.dataGenerator = SensorDataGenerator()
 
@@ -149,9 +172,19 @@ class SensorAdapterManager(object):
 				self.dataGenerator.generateDailyIndoorTemperatureDataSet(
 					minValue=tempFloor, maxValue=tempCeiling, useSeconds=False)
 
+			"""Smoke sensor data set."""
+			smokeParticleData = self.dataGenerator.generateDailySmokeParticlesDataSet(minValue=smokeParticlesFloor,
+																				 maxValue=smokeParticlesCeiling,
+																				 useSeconds=False)
+
 			self.humidityAdapter = HumiditySensorSimTask(dataSet=humidityData)
 			self.pressureAdapter = PressureSensorSimTask(dataSet=pressureData)
 			self.tempAdapter = TemperatureSensorSimTask(dataSet=tempData)
+
+			"""Smoke detector sensor simulation task."""
+			self.particleAdapter = SmokeDetectorSensorSimTask(dataSet=smokeParticleData)
+
+
 
 		else:
 			heModule = import_module('programmingtheiot.cda.emulated.HumiditySensorEmulatorTask',
@@ -168,3 +201,8 @@ class SensorAdapterManager(object):
 									 'TemperatureSensorEmulatorTask')
 			teClazz = getattr(teModule, 'TemperatureSensorEmulatorTask')
 			self.tempAdapter = teClazz()
+
+			smModule = import_module('programmingtheiot.cda.emulated.SmokeDetectorSensorEmulatorTask',
+									 'SmokeDetectorSensorEmulatorTask')
+			smClazz = getattr(smModule, 'SmokeDetectorSensorEmulatorTask')
+			self.particleAdapter = smClazz()
