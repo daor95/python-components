@@ -62,7 +62,7 @@ class ActuatorAdapterManager(object):
 	def sendActuatorCommand(self, data: ActuatorData) -> ActuatorData:
 		if data and not data.isResponseFlagEnabled():
 			# first check if the actuation event is destined for this device
-			if data.getLocationID() == self.locationID:
+			if data.getLocationID() == self.locationID or data.getLocationID() == "ConstrainedDevice":
 				logging.info("Actuator command received for location ID %s. Processing...", str(data.getLocationID()))
 
 				aType = data.getTypeID()
