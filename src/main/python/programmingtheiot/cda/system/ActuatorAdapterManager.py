@@ -19,6 +19,7 @@ from programmingtheiot.data.ActuatorData import ActuatorData
 
 from programmingtheiot.cda.sim.HvacActuatorSimTask import HvacActuatorSimTask
 from programmingtheiot.cda.sim.HumidifierActuatorSimTask import HumidifierActuatorSimTask
+from programmingtheiot.cda.sim.FireExtinguisherActuatorSimTask import FireExtinguisherActuatorSimTask
 
 class ActuatorAdapterManager(object):
 	"""
@@ -50,6 +51,9 @@ class ActuatorAdapterManager(object):
 		self.hvacActuator = None
 		self.ledDisplayActuator = None
 
+		"""Actuator for fire extinguisher control."""
+		self.fireExtinguisherActuator = None
+
 		# Log emulator/simulator usage
 		if self.useEmulator:
 			logging.info("Emulators will be used for environmental actuation.")
@@ -80,6 +84,12 @@ class ActuatorAdapterManager(object):
 					elif aType == ConfigConst.LED_DISPLAY_ACTUATOR_TYPE and self.ledDisplayActuator:
 						logging.info("Updating LED display actuator with data: %s", str(data))
 						responseData = self.ledDisplayActuator.updateActuator(data)
+
+					#NEW ACTUATOR TYPE - Fire Extinguisher Actuator
+					elif aType == ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_TYPE and self.fireExtinguisherActuator:
+						logging.info("Updating CO PARTICLE Actuator with data: %s", data)
+						responseData = self.fireExtinguisherActuator.updateActuator(data)
+
 					else:
 						logging.warning("No valid actuator type. Ignoring actuation for type: %s", data.getTypeID())
 				except Exception as e:
@@ -110,6 +120,9 @@ class ActuatorAdapterManager(object):
 			# create the HVAC actuator
 			self.hvacActuator = HvacActuatorSimTask()
 
+			"""Task for fire extinguisher control."""
+			self.fireExtinguisherActuator = FireExtinguisherActuatorSimTask()
+
 		else:
 			hueModule = import_module('programmingtheiot.cda.emulated.HumidifierEmulatorTask', 'HumidiferEmulatorTask')
 			hueClazz = getattr(hueModule, 'HumidifierEmulatorTask')
@@ -125,4 +138,8 @@ class ActuatorAdapterManager(object):
 			leClazz = getattr(leDisplayModule, 'LedDisplayEmulatorTask')
 			self.ledDisplayActuator = leClazz()
 
+			"""Emulator for fire extinguisher control."""
+			feeModule = import_module('programmingtheiot.cda.emulated.FireExtinguisherEmulatorTask', 'FireExtinguisherEmulatorTask')
+			feeClazz = getattr(feeModule, 'FireExtinguisherEmulatorTask')
+			self.particleActuator = feeClazz()
 
