@@ -19,7 +19,7 @@ from programmingtheiot.cda.sim.BaseActuatorSimTask import BaseActuatorSimTask
 from pisense import SenseHAT
 
 
-class SmokeDetectorEmulatorTask(BaseActuatorSimTask):
+class FireExtinguisherEmulatorTask(BaseActuatorSimTask):
     """
     Shell representation of class for student implementation.
 
@@ -27,9 +27,9 @@ class SmokeDetectorEmulatorTask(BaseActuatorSimTask):
 
     def __init__(self):
 
-        super(SmokeDetectorEmulatorTask, self).__init__(name = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_NAME,
-														typeID = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_TYPE,
-														simpleName = "Fire_Alarm_Buzzer")
+        super(FireExtinguisherEmulatorTask, self).__init__(name = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_NAME,
+                                                           typeID = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_TYPE,
+                                                           simpleName = "Fire_Alarm_Buzzer")
 
         enableEmulation = ConfigUtil().getBoolean(ConfigConst.CONSTRAINED_DEVICE,
                                                   ConfigConst.ENABLE_EMULATOR_KEY)

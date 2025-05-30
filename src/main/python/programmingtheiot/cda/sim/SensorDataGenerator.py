@@ -49,6 +49,12 @@ class SensorDataGenerator(object):
 	
 	MIN_MONITOR_PRESSURE = DEFAULT_MIN_VALUE
 	MAX_MONITOR_PRESSURE = 50000.0
+
+	"""SMOKE DETECTOR SENSOR EMULATION"""
+	MIN_SIZE_SMOKE_PARTICLE = DEFAULT_MIN_VALUE
+	LOW_NORMAL_SIZE_SMOKE_PARTICLE = 7.0
+	HI_NORMAL_SIZE_SMOKE_PARTICLE = 25
+	MAX_SIZE_SMOKE_PARTICLE = 200.0
 	
 	DEFAULT_DATA_POINTS = 60 * MAX_HOURS
 	
@@ -62,10 +68,15 @@ class SensorDataGenerator(object):
 	INVERSE_CURVE = -5
 	CURVE_UP = 10
 	CURVE_DOWN = -10
-	
+
+	"""Curve type for smoke particle size"""
+	DEFAULT_SMOKE_PARTICLE_CURVE = CURVE_UP # CURVE_UP, which is a quick ramp up and slow ramp down
+
 	DEFAULT_TEMP_CURVE = FULL_WAVE
 	DEFAULT_HUMIDITY_CURVE = BELL_CURVE
 	DEFAULT_PRESSURE_CURVE = INVERSE_CURVE
+
+
 	
 	def __init__(self, epochOffsetSeconds: float = 0.0, useCurrentTime: bool = True, alignGeneratorToDay: bool = True):
 		"""
@@ -86,6 +97,22 @@ class SensorDataGenerator(object):
 		self.useCurrentTime = useCurrentTime
 		self.alignGeneratorToDay = alignGeneratorToDay
 		self.dayDenominator = (1 - (calcLib.pi / 10)) + calcLib.pi
+
+	def generateDailySmokeParticlesDataSet(self, noiseLevel: int = DEFAULT_NOISE, minValue: float = MIN_SIZE_SMOKE_PARTICLE, maxValue: float = MAX_SIZE_SMOKE_PARTICLE, useSeconds: bool = False):
+		"""
+		Generates a time-series data set for level of SMOKE particles simulation over a 24-hour period.
+		"""
+
+		if maxValue < self.MIN_SIZE_SMOKE_PARTICLE or maxValue > self.MAX_SIZE_SMOKE_PARTICLE: maxValue = self.MAX_SIZE_SMOKE_PARTICLE
+		if minValue < self.MAX_SIZE_SMOKE_PARTICLE or minValue >= maxValue: minValue = maxValue - 1
+
+		return self.generateDailySensorDataSet(curveType=self.DEFAULT_SMOKE_PARTICLE_CURVE,
+											   noiseLevel=noiseLevel,
+											   minValue=minValue,
+											   maxValue=maxValue,
+											   startHour=0,
+											   endHour=24,
+											   useSeconds=useSeconds)
 		
 	def generateDailyEnvironmentHumidityDataSet(self, noiseLevel: int = DEFAULT_NOISE, minValue: float = MIN_ENV_HUMIDITY, maxValue: float = MAX_ENV_HUMIDITY, useSeconds: bool = False):
 		"""
