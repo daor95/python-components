@@ -7,6 +7,9 @@
 # and designed to be modified by the student as needed.
 #
 
+import ssl
+
+
 import logging
 import paho.mqtt.client as mqttClient
 import ssl
@@ -116,7 +119,17 @@ class MqttClientConnector(IPubSubClient):
 					# changed from what is indicated below.
 					#
 					# see https://docs.python.org/3/library/ssl.html for more options.
-					self.mqttClient.tls_set(self.pemFileName, tls_version=ssl.PROTOCOL_TLS_CLIENT)
+					#self.mqttClient.tls_set(self.pemFileName, tls_version=ssl.PROTOCOL_TLS_CLIENT)
+
+					self.mqttClient.tls_set(
+						ca_certs=self.pemFileName,
+						certfile=None,
+						keyfile=None,
+						cert_reqs=ssl.CERT_NONE,
+						tls_version=ssl.PROTOCOL_TLS,
+						ciphers=None
+					)
+					self.mqttClient.tls_insecure_set(True)
 			except:
 				logging.warning("Failed to enable TLS encryption. Using unencrypted connection.")
 

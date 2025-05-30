@@ -53,7 +53,7 @@ class DeviceDataManagerIntegrationTest(unittest.TestCase):
 		ddMgr = DeviceDataManager()
 		ddMgr.startManager()
 		
-		sleep(60)
+		sleep(300)
 		
 		ddMgr.stopManager()
 		

@@ -12,14 +12,14 @@
 #
 [Mqtt.GatewayService]
 credFile       = ./cred/PiotMqttLocalCred.props
-certFile       = ./cert/PiotMqttLocalCertFile.pem
+certFile       = ./certs/server.crt
 host           = localhost
 port           = 1883
 securePort     = 8883
 defaultQoS     = 0
 keepAlive      = 60
 enableAuth     = False
-enableCrypt    = False
+enableCrypt    = True
 
 #
 # CoAP client configuration information
@@ -43,7 +43,7 @@ enableSimulator  = True
 enableSenseHAT   = True
 enableMqttClient = True
 enableCoapServer = False
-enableCoapClient = True
+enableCoapClient = False
 enableSystemPerformance = True
 enableSensing    = True
 enableLogging    = True
@@ -51,6 +51,7 @@ pollCycleSecs    = 5
 testGdaDataPath  = /tmp/gda-data
 testCdaDataPath  = /tmp/cda-data
 testEmptyApp     = False
+runForever = True
 
 # configurable limits for sensor simulation
 humiditySimFloor   =   35.0
@@ -59,6 +60,8 @@ pressureSimFloor   =  990.0
 pressureSimCeiling = 1010.0
 tempSimFloor       =   15.0
 tempSimCeiling     =   25.0
+gradeSimFloor    =  0.0
+gradeSimCeiling  =  10.0
 
 # configurable limits for actuator triggers
 handleTempChangeOnDevice = True
