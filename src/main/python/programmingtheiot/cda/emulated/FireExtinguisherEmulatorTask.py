@@ -29,7 +29,7 @@ class FireExtinguisherEmulatorTask(BaseActuatorSimTask):
 
         super(FireExtinguisherEmulatorTask, self).__init__(name = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_NAME,
                                                            typeID = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_TYPE,
-                                                           simpleName = "Fire_Alarm_Buzzer")
+                                                           simpleName = "Fire_Alarm_Fire_Suppression")
 
         enableEmulation = ConfigUtil().getBoolean(ConfigConst.CONSTRAINED_DEVICE,
                                                   ConfigConst.ENABLE_EMULATOR_KEY)

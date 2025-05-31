@@ -25,4 +25,4 @@ class FireExtinguisherActuatorSimTask (BaseActuatorSimTask):
     def __init__(self):
         super(FireExtinguisherActuatorSimTask, self).__init__(name = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_NAME,
 															  typeID = ConfigConst.FIRE_EXTINGUISHER_ACTUATOR_TYPE,
-															  simpleName = "Fire_Alarm_Buzzer")
+															  simpleName = "Fire_Alarm_Fire_Suppression")
